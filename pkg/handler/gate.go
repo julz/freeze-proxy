@@ -38,8 +38,8 @@ func New(delegate http.Handler, pause, resume func()) http.HandlerFunc {
 
 				go func(r req) {
 					delegate.ServeHTTP(r.w, r.r)
-					doneCh <- struct{}{}
 					close(r.done) // return from ServeHTTP.
+					doneCh <- struct{}{}
 				}(r)
 			}
 		}
