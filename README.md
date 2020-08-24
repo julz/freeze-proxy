@@ -5,6 +5,8 @@ count drops to zero.
 
 _Status_: PoC - not for production. But fun/interesting!
 
+![screencast of pauseme](demo/demo.gif)
+
 # Why?
 
 This is an experiment in enabling a lambda-style UX where containers are paused
@@ -64,5 +66,7 @@ Known limitations (there may be more, this is a PoC!) / Future Work:
  - Pauses immediately when request count hits zero, might be nice to wait a few
    milliseconds in case another request comes in to save the small overhead of
    the pause/unpause in this case.
- - Graceful shutdown isn't quite right, we exit immediately when we should keep
+ - Todo: Graceful shutdown isn't quite right, we exit immediately when we should keep
    proxying until shutdown is complete.
+ - Todo: freeze should answer liveness/readiness probes when
+   user-container is frozen rather than forwarding.
