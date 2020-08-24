@@ -64,3 +64,5 @@ Known limitations (there may be more, this is a PoC!) / Future Work:
  - Pauses immediately when request count hits zero, might be nice to wait a few
    milliseconds in case another request comes in to save the small overhead of
    the pause/unpause in this case.
+ - Graceful shutdown isn't quite right, we exit immediately when we should keep
+   proxying until shutdown is complete.
