@@ -5,6 +5,13 @@ count drops to zero.
 
 _Status_: PoC - not for production. But fun/interesting!
 
+In the demo below, a background goroutine tries to print every 500ms.
+Normally it would run constantly, even when no requests are in-flight.
+With freeze-proxy enabled, once request count drops to zero the background
+goroutine is paused. 
+When a new request comes in the container is quickly unpaused and the
+background activity resumes normally.
+
 ![screencast of freeze-proxy](demo/demo.gif)
 
 # Install
