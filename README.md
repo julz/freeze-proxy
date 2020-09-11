@@ -7,6 +7,15 @@ _Status_: PoC - not for production. But fun/interesting!
 
 ![screencast of freeze-proxy](demo/demo.gif)
 
+# Install
+
+1. Ensure your Kubernetes is using `containerd` as the container runtime.
+  - e.g. for minikube, add `--runtime containerd` to `minikube start` command.
+  - Support for other container runtimes should be possible, eventually.
+1. Install knative as normal
+1. `ko apply -f config/webhook.yaml`
+1. That's it - deploy your knative service as normal!
+
 # Why?
 
 This is an experiment in enabling a lambda-style UX where containers are paused
@@ -30,14 +39,6 @@ mounted containerd socket to pause the user's container. When a new request
 comes in, the user's container is resumed in the same way, and the proxy
 forwards the request over.
 
-# Install
-
-1. Ensure your Kubernetes is using `containerd` as the container runtime.
-  - e.g. for minikube, add `--runtime containerd` to `minikube start` command.
-  - Support for other container runtimes should be possible, eventually.
-1. Install knative as normal
-1. `ko apply -f config/webhook.yaml`
-1. That's it - deploy your knative service as normal!
 
 # Example App
 
