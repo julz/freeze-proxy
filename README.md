@@ -17,15 +17,15 @@ background activity resumes normally.
 # Install
 
 1. Ensure your Kubernetes is using `containerd` as the container runtime.
-  - e.g. for minikube, add `--runtime containerd` to `minikube start` command.
-  - Support for other container runtimes should be possible, eventually.
+   - e.g. for minikube, add `--runtime containerd` to `minikube start` command.
+   - Support for other container runtimes should be possible, eventually.
 1. Install knative as normal
 1. `ko apply -f config/webhook.yaml`
 1. That's it - deploy your knative service as normal!
 
 # Why?
 
-This is an experiment in enabling a lambda-style UX where containers are paused
+This is an experiment in enabling a lambda/openwhisk-style UX where containers are paused
 between requests. This allows you to keep "warm" containers around than can be
 quickly unpaused when load comes in, without needing to worry about people
 using that background capacity without paying for it. Particularly useful in
