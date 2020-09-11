@@ -10,4 +10,4 @@ spec:
     spec:
       containerConcurrency: 5
       containers:
-        - image: ko://github.com/julz/pauseme/cmd/sleeptalker
+        - image: ko://github.com/julz/freeze-proxy/cmd/sleeptalker

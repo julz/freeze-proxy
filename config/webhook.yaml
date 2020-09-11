@@ -33,10 +33,10 @@ spec:
       - name: webhook
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: ko://github.com/julz/pauseme/cmd/webhook
+        image: ko://github.com/julz/freeze-proxy/cmd/webhook
         env:
         - name: FREEZE_PROXY_IMAGE
-          value: ko://github.com/julz/pauseme/cmd/freezeproxy
+          value: ko://github.com/julz/freeze-proxy/cmd/freezeproxy
         - name: SYSTEM_NAMESPACE
           valueFrom:
             fieldRef:
@@ -46,7 +46,7 @@ spec:
         - name: CONFIG_OBSERVABILITY_NAME
           value: config-observability
         - name: METRICS_DOMAIN
-          value: extensions.knative.dev/pauseme
+          value: extensions.knative.dev/freeze-proxy
         - name: WEBHOOK_NAME
           value: freezer-webhook
         ports:

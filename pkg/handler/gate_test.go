@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/julz/pauseme/pkg/handler"
+	"github.com/julz/freeze-proxy/pkg/handler"
 	"go.uber.org/atomic"
 )
 

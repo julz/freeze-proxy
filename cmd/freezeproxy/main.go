@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/julz/pauseme/pkg/freezer"
-	"github.com/julz/pauseme/pkg/handler"
+	"github.com/julz/freeze-proxy/pkg/freezer"
+	"github.com/julz/freeze-proxy/pkg/handler"
 	"github.com/prometheus/common/log"
 	"go.uber.org/zap"
 )

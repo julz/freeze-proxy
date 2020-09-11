@@ -1,4 +1,4 @@
-module github.com/julz/pauseme
+module github.com/julz/freeze-proxy
 
 go 1.15
 

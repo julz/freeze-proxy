@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/julz/pauseme/pkg/mutations"
+	"github.com/julz/freeze-proxy/pkg/mutations"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/configmap"
