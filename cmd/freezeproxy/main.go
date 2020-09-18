@@ -25,7 +25,7 @@ func main() {
 	}
 
 	sugared := logger.Sugar()
-	freezer, err := freezer.Connect(sugared, os.Getenv("POD_NAME"), "user-container")
+	freezer, err := freezer.Connect(sugared, os.Getenv("POD_NAME"), os.Getenv("USER_CONTAINER"))
 	if err != nil {
 		panic(err)
 	}

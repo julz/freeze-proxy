@@ -42,6 +42,7 @@ func (p *Pod) SetDefaults(ctx context.Context) {
 		},
 	})
 
+	userContainerName := "user-container"
 	for i, _ := range p.Pod.Spec.Containers {
 		if p.Pod.Spec.Containers[i].Name == "queue-proxy" {
 			for j := range p.Pod.Spec.Containers[i].Env {
@@ -49,6 +50,10 @@ func (p *Pod) SetDefaults(ctx context.Context) {
 					p.Pod.Spec.Containers[i].Env[j].Value = "9999"
 				}
 			}
+		} else if len(p.Pod.Spec.Containers) == 2 {
+			// if we're not in the multi-container path, we can easily figure out which
+			// container is the user container because it's whichever isn't the QP.
+			userContainerName = p.Pod.Spec.Containers[i].Name
 		}
 	}
 
@@ -63,6 +68,9 @@ func (p *Pod) SetDefaults(ctx context.Context) {
 					FieldPath:  "metadata.name",
 				},
 			},
+		}, {
+			Name:  "USER_CONTAINER",
+			Value: userContainerName,
 		}},
 		VolumeMounts: []v1.VolumeMount{{
 			Name: "containerd-socket",
