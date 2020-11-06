@@ -43,7 +43,7 @@ func (p *Pod) SetDefaults(ctx context.Context) {
 	})
 
 	userContainerName := "user-container"
-	for i, _ := range p.Pod.Spec.Containers {
+	for i := range p.Pod.Spec.Containers {
 		if p.Pod.Spec.Containers[i].Name == "queue-proxy" {
 			for j := range p.Pod.Spec.Containers[i].Env {
 				if p.Pod.Spec.Containers[i].Env[j].Name == "USER_PORT" {

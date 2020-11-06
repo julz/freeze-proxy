@@ -20,6 +20,7 @@ var types = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
 	v1.SchemeGroupVersion.WithKind("Pod"): &mutations.Pod{},
 }
 
+// NewController creates a new admission controller which mutates pods to add the freeze proxy.
 func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
 	return defaulting.NewAdmissionController(ctx,
 		// Name of the resource webhook.

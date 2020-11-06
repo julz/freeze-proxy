@@ -18,7 +18,7 @@ import (
 // Containerd freezes and unfreezes containers via containerd.
 type Containerd struct {
 	conn        *grpc.ClientConn
-	containerId string
+	containerID string
 }
 
 // Connect connects to containerd and looks up the containerId.
@@ -34,14 +34,14 @@ func Connect(logger *zap.SugaredLogger, podName, containerName string) (*Contain
 		return nil, err
 	}
 
-	containerId, err := lookupContainerId(ctx, conn, podName, containerName)
+	containerID, err := lookupContainerID(ctx, conn, podName, containerName)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Containerd{
 		conn:        conn,
-		containerId: containerId,
+		containerID: containerID,
 	}, nil
 }
 
@@ -53,7 +53,7 @@ func (f *Containerd) Freeze(ctx context.Context) error {
 	}
 
 	ctx = namespaces.WithNamespace(ctx, "k8s.io")
-	if _, err := ctrd.TaskService().Pause(ctx, &tasks.PauseTaskRequest{ContainerID: f.containerId}); err != nil {
+	if _, err := ctrd.TaskService().Pause(ctx, &tasks.PauseTaskRequest{ContainerID: f.containerID}); err != nil {
 		return err
 	}
 
@@ -68,14 +68,14 @@ func (f *Containerd) Thaw(ctx context.Context) error {
 	}
 
 	ctx = namespaces.WithNamespace(ctx, "k8s.io")
-	if _, err := ctrd.TaskService().Resume(ctx, &tasks.ResumeTaskRequest{ContainerID: f.containerId}); err != nil {
+	if _, err := ctrd.TaskService().Resume(ctx, &tasks.ResumeTaskRequest{ContainerID: f.containerID}); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func lookupContainerId(ctx context.Context, conn *grpc.ClientConn, podName, containerName string) (string, error) {
+func lookupContainerID(ctx context.Context, conn *grpc.ClientConn, podName, containerName string) (string, error) {
 	client := cri.NewRuntimeServiceClient(conn)
 	pods, err := client.ListPodSandbox(context.Background(), &cri.ListPodSandboxRequest{
 		Filter: &cri.PodSandboxFilter{
