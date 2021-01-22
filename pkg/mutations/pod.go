@@ -7,6 +7,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/apis"
+	"knative.dev/pkg/ptr"
 )
 
 var (
@@ -33,11 +34,17 @@ func (p *Pod) SetDefaults(ctx context.Context) {
 	p.Pod.Labels["freeze-pod-added"] = "true"
 	p.Pod.Labels["freeze-pod-version"] = "2"
 	p.Pod.Spec.Volumes = append(p.Pod.Spec.Volumes, v1.Volume{
-		Name: "containerd-socket",
+		Name: "projected",
 		VolumeSource: v1.VolumeSource{
-			HostPath: &v1.HostPathVolumeSource{
-				Path: "/var/run/containerd/containerd.sock",
-				Type: &socketType,
+			Projected: &v1.ProjectedVolumeSource{
+				Sources: []v1.VolumeProjection{{
+					ServiceAccountToken: &v1.ServiceAccountTokenProjection{
+						Audience:          "freeze",
+						Path:              "token",
+						ExpirationSeconds: ptr.Int64(60 * 10),
+					},
+				},
+				},
 			},
 		},
 	})
@@ -61,11 +68,11 @@ func (p *Pod) SetDefaults(ctx context.Context) {
 		Name:  "freeze-proxy",
 		Image: os.Getenv("FREEZE_PROXY_IMAGE"),
 		Env: []v1.EnvVar{{
-			Name: "POD_NAME",
+			Name: "HOST_IP",
 			ValueFrom: &v1.EnvVarSource{
 				FieldRef: &v1.ObjectFieldSelector{
 					APIVersion: "v1",
-					FieldPath:  "metadata.name",
+					FieldPath:  "status.hostIP",
 				},
 			},
 		}, {
@@ -73,13 +80,8 @@ func (p *Pod) SetDefaults(ctx context.Context) {
 			Value: userContainerName,
 		}},
 		VolumeMounts: []v1.VolumeMount{{
-			Name: "containerd-socket",
-			// TODO(jz):
-			// rather than mounting containerd socket, mount a socket from an
-			// intermediate daemon. This would greatly lower the surface area we're
-			// exposing in to containers, and avoid needing to run the freeze proxy
-			// as root.
-			MountPath: "/var/run/containerd/containerd.sock",
+			Name:      "projected",
+			MountPath: "/var/run/projected",
 		}},
 	})
 }
