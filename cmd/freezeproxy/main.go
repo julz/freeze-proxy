@@ -1,7 +1,8 @@
 package main
 
 import (
-	"context"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -10,40 +11,52 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/julz/freeze-proxy/pkg/freezer"
 	"github.com/julz/freeze-proxy/pkg/handler"
-	"github.com/prometheus/common/log"
-	"go.uber.org/zap"
 )
 
 var shutdownSignals = []os.Signal{os.Interrupt, syscall.SIGTERM}
 
 func main() {
-	logger, err := zap.NewDevelopment()
+	hostIP := os.Getenv("HOST_IP")
+
+	log.Println("Connect to freeze daemon on:", hostIP)
+
+	// todo: reload every few minutes
+	token, err := ioutil.ReadFile("/var/run/projected/token")
 	if err != nil {
-		panic(err)
+		log.Fatal("could not read token", err)
 	}
 
-	sugared := logger.Sugar()
-	freezer, err := freezer.Connect(sugared, os.Getenv("POD_NAME"), os.Getenv("USER_CONTAINER"))
-	if err != nil {
-		panic(err)
-	}
+	log.Println("token:", string(token))
 
 	pause := func() {
-		if err := freezer.Freeze(context.Background()); err != nil {
+		req, err := http.NewRequest("POST", "http://"+hostIP+":9696/freeze", nil)
+		if err != nil {
 			panic(err)
 		}
 
-		log.Info("paused")
+		req.Header.Add("Token", string(token))
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Println("sent pause request, got", resp.StatusCode)
 	}
 
 	resume := func() {
-		if err := freezer.Thaw(context.Background()); err != nil {
+		req, err := http.NewRequest("POST", "http://"+hostIP+":9696/thaw", nil)
+		if err != nil {
 			panic(err)
 		}
 
-		log.Info("resumed")
+		req.Header.Add("Token", string(token))
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Println("sent resume request, got", resp.StatusCode)
 	}
 
 	// make sure we resume when we're going to be killed so that the user
