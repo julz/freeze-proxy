@@ -30,6 +30,8 @@ func main() {
 
 	http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println("hello from freeze daemon, token:", r.Header.Get("Token"))
+
+		// TODO: either cache this result to avoid slamming the API server on each freeze, or keep connection open while token is valid.
 		result, err := clientset.AuthenticationV1().TokenReviews().Create(&authv1.TokenReview{
 			Spec: authv1.TokenReviewSpec{
 				Token: r.Header.Get("Token"),
@@ -50,7 +52,18 @@ func main() {
 			panic(err)
 		}
 
-		freezer.Freeze(r.Context())
-		log.Println("freezed!")
+		if r.URL.Path == "/freeze" {
+			if err := freezer.Freeze(r.Context()); err != nil {
+				log.Println("failed to thaw", podName, err)
+			} else {
+				log.Println("froze", podName)
+			}
+		} else {
+			if err := freezer.Thaw(r.Context()); err != nil {
+				log.Println("failed to thaw", podName, err)
+			} else {
+				log.Println("thawed", podName)
+			}
+		}
 	}))
 }
