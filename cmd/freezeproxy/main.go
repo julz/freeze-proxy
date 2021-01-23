@@ -45,7 +45,7 @@ func main() {
 	}
 
 	resume := func() {
-		req, err := http.NewRequest("POST", "http://"+hostIP+":9696/resume", nil)
+		req, err := http.NewRequest("POST", "http://"+hostIP+":9696/thaw", nil)
 		if err != nil {
 			panic(err)
 		}

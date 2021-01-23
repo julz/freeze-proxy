@@ -9,7 +9,6 @@ import (
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/api/services/tasks/v1"
 	"github.com/containerd/containerd/namespaces"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	cri "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
@@ -17,16 +16,16 @@ import (
 
 // Containerd freezes and unfreezes containers via containerd.
 type Containerd struct {
-	conn        *grpc.ClientConn
-	containerID string
+	conn *grpc.ClientConn
 }
 
-// Connect connects to containerd and looks up the containerId.
+// Connect connects to containerd.
 // Requires /var/run/containerd/containerd.sock to be mounted.
-func Connect(logger *zap.SugaredLogger, podName, containerName string) (*Containerd, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func Connect() (*Containerd, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
+	// TODO: fix the hard-coding here.
 	conn, err := grpc.DialContext(ctx, "/var/run/containerd/containerd.sock", grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024*1024*16)), grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 		return (&net.Dialer{}).DialContext(ctx, "unix", addr)
 	}))
@@ -34,26 +33,25 @@ func Connect(logger *zap.SugaredLogger, podName, containerName string) (*Contain
 		return nil, err
 	}
 
-	containerID, err := lookupContainerID(ctx, conn, podName, containerName)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Containerd{
-		conn:        conn,
-		containerID: containerID,
+		conn: conn,
 	}, nil
 }
 
 // Freeze freezes the user container via the freezer cgroup.
-func (f *Containerd) Freeze(ctx context.Context) error {
+func (f *Containerd) Freeze(ctx context.Context, podName, containerName string) error {
 	ctrd, err := containerd.NewWithConn(f.conn)
 	if err != nil {
 		return err
 	}
 
+	containerID, err := lookupContainerID(ctx, f.conn, podName, containerName)
+	if err != nil {
+		return err
+	}
+
 	ctx = namespaces.WithNamespace(ctx, "k8s.io")
-	if _, err := ctrd.TaskService().Pause(ctx, &tasks.PauseTaskRequest{ContainerID: f.containerID}); err != nil {
+	if _, err := ctrd.TaskService().Pause(ctx, &tasks.PauseTaskRequest{ContainerID: containerID}); err != nil {
 		return err
 	}
 
@@ -61,14 +59,19 @@ func (f *Containerd) Freeze(ctx context.Context) error {
 }
 
 // Thaw thats a container which was freezed via the Freeze method.
-func (f *Containerd) Thaw(ctx context.Context) error {
+func (f *Containerd) Thaw(ctx context.Context, podName, containerName string) error {
 	ctrd, err := containerd.NewWithConn(f.conn)
 	if err != nil {
 		return err
 	}
 
+	containerID, err := lookupContainerID(ctx, f.conn, podName, containerName)
+	if err != nil {
+		return err
+	}
+
 	ctx = namespaces.WithNamespace(ctx, "k8s.io")
-	if _, err := ctrd.TaskService().Resume(ctx, &tasks.ResumeTaskRequest{ContainerID: f.containerID}); err != nil {
+	if _, err := ctrd.TaskService().Resume(ctx, &tasks.ResumeTaskRequest{ContainerID: containerID}); err != nil {
 		return err
 	}
 
@@ -106,5 +109,6 @@ func lookupContainerID(ctx context.Context, conn *grpc.ClientConn, podName, cont
 	if len(ctrs.Containers) == 0 {
 		return "", fmt.Errorf("pod %s not found", podName)
 	}
+
 	return ctrs.Containers[0].Id, nil
 }
