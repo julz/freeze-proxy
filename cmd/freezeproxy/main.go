@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/julz/freeze-proxy/pkg/handler"
+	"github.com/julz/freeze-proxy/pkg/gate"
 )
 
 var shutdownSignals = []os.Signal{os.Interrupt, syscall.SIGTERM}
@@ -75,5 +75,5 @@ func main() {
 	proxy := httputil.NewSingleHostReverseProxy(&url.URL{Scheme: "http", Host: "localhost:8080"})
 	proxy.FlushInterval = 25 * time.Millisecond
 
-	http.ListenAndServe(":9999", handler.New(proxy, pause, resume))
+	http.ListenAndServe(":9999", gate.New(proxy, pause, resume))
 }
