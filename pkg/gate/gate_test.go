@@ -1,4 +1,4 @@
-package handler_test
+package gate_test
 
 import (
 	"net/http"
@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/julz/freeze-proxy/pkg/handler"
+	"github.com/julz/freeze-proxy/pkg/gate"
 	"go.uber.org/atomic"
 )
 
-func TestHandler(t *testing.T) {
+func TestGate(t *testing.T) {
 	tests := []struct {
 		name            string
 		pauses, resumes int64
@@ -75,7 +75,7 @@ func TestHandler(t *testing.T) {
 				delegated.Inc()
 			}
 
-			h := handler.New(http.HandlerFunc(delegate), pause, resume)
+			h := gate.New(http.HandlerFunc(delegate), pause, resume)
 
 			var wg sync.WaitGroup
 			wg.Add(len(tt.events))
