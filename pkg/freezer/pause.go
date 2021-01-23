@@ -78,12 +78,12 @@ func (f *Containerd) Thaw(ctx context.Context, podName, containerName string) er
 	return nil
 }
 
-func lookupContainerID(ctx context.Context, conn *grpc.ClientConn, podName, containerName string) (string, error) {
+func lookupContainerID(ctx context.Context, conn *grpc.ClientConn, podUID, containerName string) (string, error) {
 	client := cri.NewRuntimeServiceClient(conn)
 	pods, err := client.ListPodSandbox(context.Background(), &cri.ListPodSandboxRequest{
 		Filter: &cri.PodSandboxFilter{
 			LabelSelector: map[string]string{
-				"io.kubernetes.pod.name": podName,
+				"io.kubernetes.pod.uid": podUID,
 			},
 		},
 	})
@@ -92,7 +92,7 @@ func lookupContainerID(ctx context.Context, conn *grpc.ClientConn, podName, cont
 	}
 
 	if len(pods.Items) == 0 {
-		return "", fmt.Errorf("pod %s not found", podName)
+		return "", fmt.Errorf("pod %s not found", podUID)
 	}
 	pod := pods.Items[0]
 
@@ -107,7 +107,7 @@ func lookupContainerID(ctx context.Context, conn *grpc.ClientConn, podName, cont
 	}
 
 	if len(ctrs.Containers) == 0 {
-		return "", fmt.Errorf("pod %s not found", podName)
+		return "", fmt.Errorf("container %q in pod %q not found", containerName, podUID)
 	}
 
 	return ctrs.Containers[0].Id, nil

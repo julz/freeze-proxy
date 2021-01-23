@@ -47,9 +47,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch r.URL.Path {
 	case "/freeze":
-		h.Freezer.Freeze(r.Context(), resp.Status.User.Extra["authentication.kubernetes.io/pod-name"][0], "user-container")
+		h.Freezer.Freeze(r.Context(), resp.Status.User.Extra["authentication.kubernetes.io/pod-uid"][0], "user-container")
 	case "/thaw":
-		h.Thawer.Thaw(r.Context(), resp.Status.User.Extra["authentication.kubernetes.io/pod-name"][0], "user-container")
+		h.Thawer.Thaw(r.Context(), resp.Status.User.Extra["authentication.kubernetes.io/pod-uid"][0], "user-container")
 	default:
 		w.WriteHeader(http.StatusNotFound)
 	}
