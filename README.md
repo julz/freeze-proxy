@@ -80,3 +80,6 @@ Known limitations (there may be more, this is a PoC!) / Future Work:
  - Todo: support user-chosen userContainer ports, names
  - It would be nice to merge the freeze proxy in to the queue proxy to avoid
    the extra hop and the mutating admission controller stuff.
+ - Rather than using freeze/resume, might be nicer to just dramatically lower
+   cpu quota. This may play nicer with language runtimes etc that don't expect
+   time to come to a complete stop.
