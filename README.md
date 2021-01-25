@@ -20,6 +20,9 @@ background activity resumes normally.
    - e.g. for minikube, add `--runtime containerd` to `minikube start` command.
    - Support for other container runtimes should be possible, eventually.
 1. Install knative as normal
+1. Create a service account with TokenReview permissions so that the Freezer
+   Daemonset can validate tokens with the API server:
+   `kubectl -n knative-serving create serviceaccount freeze-tokenreview`
 1. `ko apply -f config/webhook.yaml`
 1. That's it - deploy your knative service as normal!
 
