@@ -17,13 +17,18 @@ background activity resumes normally.
 # Install
 
 1. Ensure your Kubernetes is using `containerd` as the container runtime.
-   - e.g. for minikube, add `--runtime containerd` to `minikube start` command.
+   - e.g. for minikube, add `--container-runtime containerd` to `minikube start` command:
+     `minikube start --kubernetes-version=v1.20.0 --container-runtime=containerd`
    - Support for other container runtimes should be possible, eventually.
-1. Install knative as normal
+1. Install knative as normal. Note: for local development, you will need to use an external container registry, i.e. Docker Hub, GCR, etc.
 1. Create a service account with TokenReview permissions so that the Freezer
    Daemonset can validate tokens with the API server:
    `kubectl -n knative-serving create serviceaccount freeze-tokenreview`
-1. `ko apply -f config/webhook.yaml`
+1. Install the Freeze-Prozy webhook and daemonset:
+   ```bash
+   ko apply -f config/webhook.yaml
+   ko apply -f config/daemon.yaml
+   ```
 1. That's it - deploy your knative service as normal!
 
 # Why?
