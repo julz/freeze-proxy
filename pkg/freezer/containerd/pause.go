@@ -1,4 +1,4 @@
-package freezer
+package containerd
 
 import (
 	"context"
