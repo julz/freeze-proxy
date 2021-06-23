@@ -1,7 +1,6 @@
 package gate
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -27,22 +26,17 @@ func New(delegate http.Handler, pause, resume func()) http.HandlerFunc {
 			select {
 			case <-doneCh:
 				inFlight--
-				fmt.Println("inFlight after request",inFlight)
 				if inFlight == 0 {
 					pause()
 				}
 
 			case r := <-reqCh:
 				inFlight++
-				fmt.Println("inFlight before request",inFlight)
 				if inFlight == 1 {
 					resume()
 				}
 
 				go func(r req) {
-
-					fmt.Println("proxy request",inFlight)
-
 					delegate.ServeHTTP(r.w, r.r)
 					close(r.done) // return from ServeHTTP.
 					doneCh <- struct{}{}
@@ -53,7 +47,6 @@ func New(delegate http.Handler, pause, resume func()) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		done := make(chan struct{})
-		fmt.Println("new request... ")
 		reqCh <- req{w, r, done}
 		// block till we're processed
 		<-done

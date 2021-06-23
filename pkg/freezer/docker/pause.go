@@ -3,6 +3,7 @@ package docker
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -27,36 +28,23 @@ func NewDockerService() (*Docker, error) {
 	return r, nil
 }
 
-func (d *Docker) createRuntimeClientIfNecessary() error {
-
-	if d.client != nil {
-		return nil
-	}
-	c, err := dockerapi.NewClientWithOpts(dockerapi.WithVersion("1.19"))
-	if err != nil {
-		return err
-	}
-	d.client = c
-	return nil
-}
-
 func (d *Docker) Freeze(ctx context.Context, podUID, containerName string) error {
-	fmt.Println("Start to freeze container", podUID, containerName)
+	log.Println("Start to freeze container", podUID, containerName)
 	containerID, err := d.lookupContainerID(ctx, podUID, containerName)
 	if err != nil {
 		return err
 	}
 	err = d.client.ContainerPause(ctx, containerID)
 	if err != nil {
-		return fmt.Errorf("error when pause container, err: %s", err.Error())
+		return fmt.Errorf("pause container: %s", err.Error())
 	}
-	fmt.Println("Freeze container", podUID, containerName, "success !")
+	log.Println("Freeze container", podUID, containerName, "success !")
 	return nil
 }
 
-// Thaw thaws a container which was freezed via the Freeze method.
+// Thaw thaws a container which was frozen via the Freeze method.
 func (d *Docker) Thaw(ctx context.Context, podUID, containerName string) error {
-	fmt.Println("Start to thaw container", podUID, containerName)
+	log.Println("Start to thaw container", podUID, containerName)
 	containerID, err := d.lookupContainerID(ctx, podUID, containerName)
 	if err != nil {
 		return err
@@ -66,7 +54,7 @@ func (d *Docker) Thaw(ctx context.Context, podUID, containerName string) error {
 	if err != nil {
 		return fmt.Errorf("pause container: %s", err.Error())
 	}
-	fmt.Println("Thaw container", podUID, containerName, "success !")
+	log.Println("Thaw container", podUID, containerName, "success !")
 	return nil
 }
 

@@ -1,28 +1,8 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: freeze-tokenreview
-  namespace: faas
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: freeze-tokenreview-binding
-  namespace: faas
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:auth-delegator
-subjects:
-- kind: ServiceAccount
-  name: freeze-tokenreview
-  namespace: faas
----
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: freeze-daemon
-  namespace: faas
+  name: freeze-daemon-containerd
+  namespace: knative-serving
 spec:
   selector:
     matchLabels:
@@ -33,6 +13,8 @@ spec:
         name: freeze-daemon
     spec:
       serviceAccountName: freeze-tokenreview # TODO: swap for account with just tokenreview
+      nodeSelector:
+        knative.dev/container-runtime: containerd
       containers:
         - name: daemon
           securityContext:
@@ -40,21 +22,15 @@ spec:
           image: ko://github.com/julz/freeze-proxy/cmd/daemon
           env:
             - name: RUNTIME_TYPE
-              value: docker
+              value: containerd
           ports:
             - containerPort: 8080
               hostPort: 9696
           volumeMounts:
             - name: containerd-socket
               mountPath: /var/run/containerd/containerd.sock
-            - name: docker-socket
-              mountPath: /var/run/docker.sock
       volumes:
         - name: containerd-socket
           hostPath:
             path: /var/run/containerd/containerd.sock
-            type: Socket
-        - name: docker-socket
-          hostPath:
-            path: /var/run/docker.sock
             type: Socket

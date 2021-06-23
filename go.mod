@@ -26,7 +26,6 @@ require (
 	k8s.io/apimachinery v0.18.7-rc.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/cri-api v0.18.8
-	k8s.io/klog v1.0.0
 	knative.dev/pkg v0.0.0-20200822052046-d5c09d2aef18
 )
 
