@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: freezer-webhook-certs
-  namespace: knative-serving
+  namespace: faas
   labels:
     serving.knative.dev/release: devel
     networking.knative.dev/ingress-provider: istio
@@ -11,7 +11,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: freezer-webhook
-  namespace: knative-serving
+  namespace: faas
   labels:
     serving.knative.dev/release: devel
 spec:
@@ -61,7 +61,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: freezer-webhook
-  namespace: knative-serving
+  namespace: faas
   labels:
     role: freezer-webhook
     serving.knative.dev/release: devel
@@ -91,7 +91,7 @@ webhooks:
   clientConfig:
     service:
       name: freezer-webhook
-      namespace: knative-serving
+      namespace: faas
   failurePolicy: Fail
   sideEffects: None
   objectSelector:
