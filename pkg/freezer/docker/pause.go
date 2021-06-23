@@ -3,7 +3,6 @@ package docker
 import (
 	"context"
 	"fmt"
-	"k8s.io/klog"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -11,18 +10,20 @@ import (
 )
 
 const DefaultDockerUri = "unix:///var/run/docker.sock"
+const Version = "1.19"
 
 type Docker struct {
-	runtimeURI string
-
 	client *dockerapi.Client
 }
 
-func NewDockerService(runtimeURI string) (*Docker, error) {
-	r := &Docker{runtimeURI: runtimeURI}
-	if err := r.createRuntimeClientIfNecessary(); err != nil {
+func NewDockerService() (*Docker, error) {
+	r := &Docker{}
+	c, err := dockerapi.NewClientWithOpts(dockerapi.WithHost(DefaultDockerUri),
+		dockerapi.WithVersion(Version))
+	if err != nil {
 		return nil, err
 	}
+	r.client = c
 	return r, nil
 }
 
@@ -40,7 +41,7 @@ func (d *Docker) createRuntimeClientIfNecessary() error {
 }
 
 func (d *Docker) Freeze(ctx context.Context, podUID, containerName string) error {
-	klog.Infof("Start to freeze container %s/%s",podUID,containerName)
+	fmt.Println("Start to freeze container", podUID, containerName)
 	containerID, err := d.lookupContainerID(ctx, podUID, containerName)
 	if err != nil {
 		return err
@@ -49,13 +50,13 @@ func (d *Docker) Freeze(ctx context.Context, podUID, containerName string) error
 	if err != nil {
 		return fmt.Errorf("error when pause container, err: %s", err.Error())
 	}
-	klog.Infof("Freeze container %s/%s success !",podUID,containerName)
+	fmt.Println("Freeze container", podUID, containerName, "success !")
 	return nil
 }
 
-// Thaw thats a container which was freezed via the Freeze method.
+// Thaw thaws a container which was freezed via the Freeze method.
 func (d *Docker) Thaw(ctx context.Context, podUID, containerName string) error {
-	klog.Infof("Start to thaw container %s/%s",podUID,containerName)
+	fmt.Println("Start to thaw container", podUID, containerName)
 	containerID, err := d.lookupContainerID(ctx, podUID, containerName)
 	if err != nil {
 		return err
@@ -63,9 +64,9 @@ func (d *Docker) Thaw(ctx context.Context, podUID, containerName string) error {
 
 	err = d.client.ContainerUnpause(ctx, containerID)
 	if err != nil {
-		return fmt.Errorf("error when unpause container, err: %s", err.Error())
+		return fmt.Errorf("pause container: %s", err.Error())
 	}
-	klog.Infof("Thaw container %s/%s success !",podUID,containerName)
+	fmt.Println("Thaw container", podUID, containerName, "success !")
 	return nil
 }
 

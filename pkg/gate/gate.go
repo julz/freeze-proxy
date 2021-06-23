@@ -55,7 +55,6 @@ func New(delegate http.Handler, pause, resume func()) http.HandlerFunc {
 		done := make(chan struct{})
 		fmt.Println("new request... ")
 		reqCh <- req{w, r, done}
-		fmt.Println("new request done ")
 		// block till we're processed
 		<-done
 	}

@@ -17,7 +17,7 @@ const (
 func GetFreezer(runtimeType string) (daemon.Freezer, error) {
 	switch runtimeType {
 	case RuntimeTypeDocker:
-		return docker.NewDockerService(docker.DefaultDockerUri)
+		return docker.NewDockerService()
 	case RuntimeTypeContainerd:
 		return containerd.Connect()
 		// TODO support cri-o
@@ -28,7 +28,7 @@ func GetFreezer(runtimeType string) (daemon.Freezer, error) {
 func GetThawer(runtimeType string) (daemon.Thawer, error) {
 	switch runtimeType {
 	case RuntimeTypeDocker:
-		return docker.NewDockerService(docker.DefaultDockerUri)
+		return docker.NewDockerService()
 	case RuntimeTypeContainerd:
 		return containerd.Connect()
 		// TODO support cri-o
