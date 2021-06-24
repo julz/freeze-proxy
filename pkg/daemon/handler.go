@@ -21,6 +21,11 @@ type Thawer interface {
 	Thaw(ctx context.Context, podName, containerName string) error
 }
 
+type FreezeThawer interface {
+	Freezer
+	Thawer
+}
+
 type Handler struct {
 	Validator TokenValidator
 	Freezer   Freezer

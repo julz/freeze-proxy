@@ -6,20 +6,24 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/julz/freeze-proxy/pkg/daemon"
 	authv1 "k8s.io/api/authentication/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/julz/freeze-proxy/pkg/freezer"
+	"github.com/julz/freeze-proxy/pkg/daemon"
+	"github.com/julz/freeze-proxy/pkg/freeze/containerd"
+	"github.com/julz/freeze-proxy/pkg/freeze/docker"
 )
 
-var runtimeType string
+const (
+	RuntimeTypeDocker     string = "docker"
+	RuntimeTypeContainerd string = "contaienrd"
+	RuntimeTypeCriO       string = "cri-o"
+)
 
-func init() {
-	runtimeType = os.Getenv("RUNTIME_TYPE")
-}
 func main() {
+	runtimeType := os.Getenv("RUNTIME_TYPE")
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -30,19 +34,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fre, err := freezer.GetFreezer(runtimeType)
-	if err != nil {
-		log.Fatal(err)
+	var freezeThaw daemon.FreezeThawer
+	switch runtimeType {
+	case RuntimeTypeDocker:
+		freezeThaw, err = docker.NewDockerService()
+	case RuntimeTypeContainerd:
+		freezeThaw, err = containerd.Connect()
+		// TODO suport crio
+	default:
+		log.Fatal("unrecognised runtimeType", runtimeType)
 	}
-
-	thawer, err := freezer.GetThawer(runtimeType)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	http.ListenAndServe(":8080", &daemon.Handler{
-		Freezer: fre,
-		Thawer:  thawer,
+		Freezer: freezeThaw,
+		Thawer:  freezeThaw,
 		Validator: daemon.TokenValidatorFunc(func(ctx context.Context, token string) (*authv1.TokenReview, error) {
 			return clientset.AuthenticationV1().TokenReviews().CreateContext(ctx, &authv1.TokenReview{
 				Spec: authv1.TokenReviewSpec{

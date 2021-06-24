@@ -1,11 +1,11 @@
-package freezer
+package freeze
 
 import (
 	"fmt"
 
 	"github.com/julz/freeze-proxy/pkg/daemon"
-	"github.com/julz/freeze-proxy/pkg/freezer/containerd"
-	docker "github.com/julz/freeze-proxy/pkg/freezer/docker"
+	"github.com/julz/freeze-proxy/pkg/freeze/containerd"
+	docker "github.com/julz/freeze-proxy/pkg/freeze/docker"
 )
 
 const (

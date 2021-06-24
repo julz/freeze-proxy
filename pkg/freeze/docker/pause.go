@@ -10,22 +10,20 @@ import (
 	dockerapi "github.com/docker/docker/client"
 )
 
-const DefaultDockerUri = "unix:///var/run/docker.sock"
-const Version = "1.19"
+const defaultDockerUri = "unix:///var/run/docker.sock"
+const version = "1.19"
 
 type Docker struct {
 	client *dockerapi.Client
 }
 
 func NewDockerService() (*Docker, error) {
-	r := &Docker{}
-	c, err := dockerapi.NewClientWithOpts(dockerapi.WithHost(DefaultDockerUri),
-		dockerapi.WithVersion(Version))
+	c, err := dockerapi.NewClientWithOpts(dockerapi.WithHost(defaultDockerUri),
+		dockerapi.WithVersion(version))
 	if err != nil {
 		return nil, err
 	}
-	r.client = c
-	return r, nil
+	return &Docker{client: c}, nil
 }
 
 func (d *Docker) Freeze(ctx context.Context, podUID, containerName string) error {
