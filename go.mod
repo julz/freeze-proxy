@@ -11,14 +11,13 @@ require (
 	github.com/containerd/fifo v0.0.0-20200410184934-f15a3290365b // indirect
 	github.com/containerd/ttrpc v1.0.1 // indirect
 	github.com/containerd/typeurl v1.0.1 // indirect
+	github.com/docker/docker v20.10.5+incompatible
 	github.com/gogo/googleapis v1.4.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/selinux v1.6.0 // indirect
-	github.com/prometheus/common v0.9.1
 	github.com/rogpeppe/go-internal v1.6.0 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
 	go.uber.org/atomic v1.6.0
-	go.uber.org/zap v1.15.0
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
 	golang.org/x/sys v0.0.0-20200821140526-fda516888d29 // indirect
 	google.golang.org/grpc v1.31.0

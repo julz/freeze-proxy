@@ -48,7 +48,6 @@ func New(delegate http.Handler, pause, resume func()) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		done := make(chan struct{})
 		reqCh <- req{w, r, done}
-
 		// block till we're processed
 		<-done
 	}

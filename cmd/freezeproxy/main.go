@@ -8,10 +8,13 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/julz/freeze-proxy/pkg/gate"
+
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 var shutdownSignals = []os.Signal{os.Interrupt, syscall.SIGTERM}
@@ -21,13 +24,18 @@ func main() {
 
 	log.Println("Connect to freeze daemon on:", hostIP)
 
-	// todo: reload every few minutes
-	token, err := ioutil.ReadFile("/var/run/projected/token")
-	if err != nil {
-		log.Fatal("could not read token", err)
-	}
+	var tokenCfg Token
+	go wait.PollInfinite(time.Minute, func() (done bool, err error) {
+		token, err := ioutil.ReadFile("/var/run/projected/token")
+		if err != nil {
+			log.Fatal("could not read token", err)
+			return true, err
+		}
+		tokenCfg.Set(string(token))
+		log.Println("refresh token...")
 
-	log.Println("token:", string(token))
+		return false, nil
+	})
 
 	pause := func() {
 		req, err := http.NewRequest("POST", "http://"+hostIP+":9696/freeze", nil)
@@ -35,7 +43,7 @@ func main() {
 			panic(err)
 		}
 
-		req.Header.Add("Token", string(token))
+		req.Header.Add("Token", tokenCfg.Get())
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			panic(err)
@@ -50,7 +58,7 @@ func main() {
 			panic(err)
 		}
 
-		req.Header.Add("Token", string(token))
+		req.Header.Add("Token", tokenCfg.Get())
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			panic(err)
@@ -76,4 +84,22 @@ func main() {
 	proxy.FlushInterval = 25 * time.Millisecond
 
 	http.ListenAndServe(":9999", gate.New(proxy, pause, resume))
+}
+
+type Token struct {
+	sync.RWMutex
+	token string
+}
+
+func (t *Token) Set(token string) {
+	t.Lock()
+	defer t.Unlock()
+
+	t.token = token
+}
+func (t *Token) Get() string {
+	t.RLock()
+	defer t.RUnlock()
+
+	return t.token
 }

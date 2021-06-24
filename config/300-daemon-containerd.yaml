@@ -1,21 +1,7 @@
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: freeze-tokenreview-binding
-  namespace: knative-serving
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:auth-delegator
-subjects:
-- kind: ServiceAccount
-  name: freeze-tokenreview
-  namespace: knative-serving
----
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: freeze-daemon
+  name: freeze-daemon-containerd
   namespace: knative-serving
 spec:
   selector:
@@ -27,11 +13,16 @@ spec:
         name: freeze-daemon
     spec:
       serviceAccountName: freeze-tokenreview # TODO: swap for account with just tokenreview
+      nodeSelector:
+        knative.dev/container-runtime: containerd
       containers:
         - name: daemon
           securityContext:
             runAsUser: 0
           image: ko://github.com/julz/freeze-proxy/cmd/daemon
+          env:
+            - name: RUNTIME_TYPE
+              value: containerd
           ports:
             - containerPort: 8080
               hostPort: 9696
