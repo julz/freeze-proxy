@@ -14,19 +14,20 @@ import (
 	cri "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
 )
 
+const defaultContainerdAddress = "/var/run/containerd/containerd.sock"
+
 // Containerd freezes and unfreezes containers via containerd.
 type Containerd struct {
 	conn *grpc.ClientConn
 }
 
-// Connect connects to containerd.
+// New return a FreezeThawer based on Containerd.
 // Requires /var/run/containerd/containerd.sock to be mounted.
-func Connect() (*Containerd, error) {
+func New() (*Containerd, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// TODO: fix the hard-coding here.
-	conn, err := grpc.DialContext(ctx, "/var/run/containerd/containerd.sock", grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024*1024*16)), grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
+	conn, err := grpc.DialContext(ctx, defaultContainerdAddress, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024*1024*16)), grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 		return (&net.Dialer{}).DialContext(ctx, "unix", addr)
 	}))
 	if err != nil {
