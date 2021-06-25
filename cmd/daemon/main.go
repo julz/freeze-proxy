@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	RuntimeTypeDocker     string = "docker"
-	RuntimeTypeContainerd string = "contaienrd"
-	RuntimeTypeCriO       string = "cri-o"
+	runtimeTypeDocker     string = "docker"
+	runtimeTypeContainerd string = "contaienrd"
+	runtimeTypeCriO       string = "cri-o"
 )
 
 func main() {
@@ -36,10 +36,10 @@ func main() {
 
 	var freezeThaw daemon.FreezeThawer
 	switch runtimeType {
-	case RuntimeTypeDocker:
-		freezeThaw, err = docker.NewDockerService()
-	case RuntimeTypeContainerd:
-		freezeThaw, err = containerd.Connect()
+	case runtimeTypeDocker:
+		freezeThaw, err = docker.New()
+	case runtimeTypeContainerd:
+		freezeThaw, err = containerd.New()
 		// TODO suport crio
 	default:
 		log.Fatal("unrecognised runtimeType", runtimeType)

@@ -17,7 +17,8 @@ type Docker struct {
 	client *dockerapi.Client
 }
 
-func NewDockerService() (*Docker, error) {
+// New return a FreezeThawer based on Docker.
+func New() (*Docker, error) {
 	c, err := dockerapi.NewClientWithOpts(dockerapi.WithHost(defaultDockerUri),
 		dockerapi.WithVersion(version))
 	if err != nil {
