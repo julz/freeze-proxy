@@ -17,7 +17,7 @@ import (
 
 const (
 	runtimeTypeDocker     string = "docker"
-	runtimeTypeContainerd string = "contaienrd"
+	runtimeTypeContainerd string = "containerd"
 	runtimeTypeCriO       string = "cri-o"
 )
 
