@@ -18,16 +18,17 @@ background activity resumes normally.
 
 1. Ensure your Kubernetes is using `containerd` as the container runtime.
    - e.g. for minikube, add `--container-runtime containerd` to `minikube start` command:
-     `minikube start --kubernetes-version=v1.20.0 --container-runtime=containerd`
+     `minikube start --kubernetes-version=v1.20.7 --container-runtime=containerd`
    - Support for other container runtimes should be possible, eventually.
 1. Install knative as normal. Note: for local development, you will need to use an external container registry, i.e. Docker Hub, GCR, etc.
-1. Create a service account with TokenReview permissions so that the Freezer
-   Daemonset can validate tokens with the API server:
-   `kubectl -n knative-serving create serviceaccount freeze-tokenreview`
-1. Install the Freeze-Prozy webhook and daemonset:
+1. Add a label to your nodes with the appropriate runtime.
+   - e.g. for minikube and containerd, run `kubectl label nodes minikube knative.dev/container-runtime=containerd`
+1. Install the Freeze-Prozy components:
    ```bash
-   ko apply -f config/400-webhook.yaml
+   ko apply -f config/100-serviceaccount.yaml 
+   ko apply -f config/200-role-binding.yaml 
    ko apply -f config/300-daemon-containerd.yaml
+   ko apply -f config/400-webhook.yaml
    ```
 1. That's it - deploy your knative service as normal!
 
@@ -37,7 +38,7 @@ This is an experiment in enabling a lambda/openwhisk-style UX where containers a
 between requests. This allows you to keep "warm" containers around than can be
 quickly unpaused when load comes in, without needing to worry about people
 using that background capacity without paying for it. Particularly useful in
-combination with the `scale-down-delay` paramter to keep containers around for
+combination with the `scale-down-delay` parameter to keep containers around for
 (e.g.) 15 minutes after the request count drops, avoiding a cold start penalty
 in this case.
 
