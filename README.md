@@ -26,8 +26,8 @@ background activity resumes normally.
    `kubectl -n knative-serving create serviceaccount freeze-tokenreview`
 1. Install the Freeze-Prozy webhook and daemonset:
    ```bash
-   ko apply -f config/webhook.yaml
-   ko apply -f config/daemon.yaml
+   ko apply -f config/400-webhook.yaml
+   ko apply -f config/300-daemon-containerd.yaml
    ```
 1. That's it - deploy your knative service as normal!
 
@@ -68,7 +68,7 @@ http requests.
 
 Known limitations (there may be more, this is a PoC!) / Future Work:
 
- - Only works with containerd right now, though support for cri-o/docker
+ - Only works with containerd and docker right now, though support for cri-o
    shouldn't be impossibly hard.
  - ~~Mounts the containerd socket in to the freeze container, which requires root
    to access, which means the freeze-proxy sidecar runs as root. This could
