@@ -18,18 +18,12 @@ background activity resumes normally.
 
 1. Ensure your Kubernetes is using `containerd` as the container runtime.
    - e.g. for minikube, add `--container-runtime containerd` to `minikube start` command:
-     `minikube start --kubernetes-version=v1.20.7 --container-runtime=containerd`
+     `minikube start --container-runtime=containerd`
    - Support for other container runtimes should be possible, eventually.
 1. Install knative as normal. Note: for local development, you will need to use an external container registry, i.e. Docker Hub, GCR, etc.
 1. Add a label to your nodes with the appropriate runtime.
    - e.g. for minikube and containerd, run `kubectl label nodes minikube knative.dev/container-runtime=containerd`
-1. Install the Freeze-Prozy components:
-   ```bash
-   ko apply -f config/100-serviceaccount.yaml 
-   ko apply -f config/200-role-binding.yaml 
-   ko apply -f config/300-daemon-containerd.yaml
-   ko apply -f config/400-webhook.yaml
-   ```
+1. Install the Freeze-Prozy components: `ko apply -f config/`
 1. That's it - deploy your knative service as normal!
 
 # Why?
