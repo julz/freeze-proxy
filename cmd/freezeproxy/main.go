@@ -25,7 +25,7 @@ func main() {
 	log.Println("Connect to freeze daemon on:", hostIP)
 
 	var tokenCfg Token
-	go wait.PollInfinite(time.Minute, func() (done bool, err error) {
+	go wait.PollImmediateInfinite(time.Minute, func() (done bool, err error) {
 		token, err := ioutil.ReadFile("/var/run/projected/token")
 		if err != nil {
 			log.Fatal("could not read token", err)
