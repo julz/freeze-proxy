@@ -13,8 +13,6 @@ import (
 	"time"
 
 	"github.com/julz/freeze-proxy/pkg/gate"
-
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 var shutdownSignals = []os.Signal{os.Interrupt, syscall.SIGTERM}
@@ -25,17 +23,13 @@ func main() {
 	log.Println("Connect to freeze daemon on:", hostIP)
 
 	var tokenCfg Token
-	go wait.PollInfinite(time.Minute, func() (done bool, err error) {
-		token, err := ioutil.ReadFile("/var/run/projected/token")
-		if err != nil {
-			log.Fatal("could not read token", err)
-			return true, err
+	refreshToken(&tokenCfg)
+	go func() {
+		for {
+			time.Sleep(1 * time.Minute)
+			refreshToken(&tokenCfg)
 		}
-		tokenCfg.Set(string(token))
-		log.Println("refresh token...")
-
-		return false, nil
-	})
+	}()
 
 	pause := func() {
 		req, err := http.NewRequest("POST", "http://"+hostIP+":9696/freeze", nil)
@@ -102,4 +96,13 @@ func (t *Token) Get() string {
 	defer t.RUnlock()
 
 	return t.token
+}
+
+func refreshToken(tokenCfg *Token) {
+	token, err := ioutil.ReadFile("/var/run/projected/token")
+	if err != nil {
+		log.Fatal("could not read token", err)
+	}
+	tokenCfg.Set(string(token))
+	log.Println("refresh token...")
 }
